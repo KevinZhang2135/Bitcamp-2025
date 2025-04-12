@@ -1,11 +1,13 @@
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import { StyleSheet, Image, Platform, Text, View, Button } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  TouchableOpacity,
+} from "react-native";
 
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import React from "react";
 
 /**
@@ -16,6 +18,13 @@ export default function CameraTab() {
   // Access cameras on the phone and checks for permissions
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
+
+  const camera = useRef<CameraView>(null);
+  const [photoUri, setPhotoUri] = useState("");
+
+  const takePhoto = () => {
+    camera.current?.takePictureAsync().then((photo) => photo && setPhotoUri(photo.uri));
+  };
 
   // Camera permissions are still loading
   if (!permission) return <View />;
@@ -33,7 +42,13 @@ export default function CameraTab() {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} facing={facing}/>
+      <CameraView ref={camera} facing={facing}>
+        <TouchableOpacity>
+          <svg style={styles.photoButton} onClick={takePhoto}>
+            <circle cx="32" cy="32" r="32" fill="white" />
+          </svg>
+        </TouchableOpacity>
+      </CameraView>
     </View>
   );
 }
@@ -41,29 +56,28 @@ export default function CameraTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   message: {
-    textAlign: 'center',
+    textAlign: "center",
     paddingBottom: 10,
-  },
-  camera: {
-    flex: 1,
   },
   buttonContainer: {
     flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
+    flexDirection: "row",
+    backgroundColor: "transparent",
     margin: 64,
   },
   button: {
     flex: 1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
+    alignSelf: "flex-end",
+    alignItems: "center",
   },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-  },
+  photoButton: {
+    position: "fixed",
+    bottom: 128,
+    right: "calc(50% - 32px)",
+    width: 64,
+    height: 64
+  }
 });
