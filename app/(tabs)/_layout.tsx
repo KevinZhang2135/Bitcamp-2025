@@ -45,6 +45,16 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="files"
+        options={{
+          title: "files",
+          tabBarIcon: ({color}) =>(
+            <Ionicons name="file-tray" size={32} color={color} />
+          ),
+
+        }}      
+      />
     </Tabs>
   );
 }
