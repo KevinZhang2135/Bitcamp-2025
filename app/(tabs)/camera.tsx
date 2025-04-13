@@ -1,11 +1,5 @@
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Button,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, Text, View, Button, TouchableOpacity } from "react-native";
 
 import { useRef, useState } from "react";
 import React from "react";
@@ -20,10 +14,22 @@ export default function CameraTab() {
   const [permission, requestPermission] = useCameraPermissions();
 
   const camera = useRef<CameraView>(null);
-  const [photoUri, setPhotoUri] = useState("");
+  const [photoText, setPhotoText] = useState("");
 
+  // Captures base64 string from camera and sends it to backend for processing
   const takePhoto = () => {
-    camera.current?.takePictureAsync().then((photo) => photo && setPhotoUri(photo.uri));
+    camera.current?.takePictureAsync().then(async (photo) => {
+      if (!photo) return;
+
+      const res = await fetch("http://127.0.0.1:5000", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({base64 : photo.base64?.substring(22)}),
+      });
+    });
   };
 
   // Camera permissions are still loading
@@ -42,7 +48,7 @@ export default function CameraTab() {
 
   return (
     <View style={styles.container}>
-      <CameraView ref={camera} facing={facing}>
+      <CameraView ref={camera} facing={facing} mirror>
         <TouchableOpacity>
           <svg style={styles.photoButton} onClick={takePhoto}>
             <circle cx="32" cy="32" r="32" fill="white" />
@@ -78,6 +84,6 @@ const styles = StyleSheet.create({
     bottom: 128,
     right: "calc(50% - 32px)",
     width: 64,
-    height: 64
-  }
+    height: 64,
+  },
 });

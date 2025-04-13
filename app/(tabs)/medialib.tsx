@@ -22,8 +22,6 @@ export default function App() {
   }
 
   return (
-
-    
     <view>
       <Text style={styles.message}>
                 We need your permission to get access to media
