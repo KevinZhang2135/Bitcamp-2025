@@ -1,13 +1,40 @@
+# Flask
 from flask import Flask, request
 from flask_cors import CORS
 
+# Systems
 import io
-import cv2
+import os
+from dotenv import load_dotenv
 import base64 
-import pytesseract
-import numpy as np
-from PIL import Image
 
+
+# Image parsing
+import cv2
+import pytesseract
+from PIL import Image
+import numpy as np
+
+# Databases
+import pymongo
+import json
+
+api = Flask(__name__)
+CORS(api)
+
+load_dotenv()
+MONGODB_KEY = os.getenv("EXPO_PUBLIC_MONGODB_API_KEY")
+
+client = pymongo.MongoClient(MONGODB_KEY)
+database = client['medicial_database']
+medicines_table = database['medicines']
+
+print(MONGODB_KEY)
+print(medicines_table)
+for i in medicines_table.find():
+    print(i)
+    
+exit(0)
 
 def base64_to_image(base64_string: str) -> Image:
     """Concerts a base 64 string into a PIL image
@@ -37,25 +64,25 @@ def detect_text_from_image(pil_image: Image) -> str:
     pil_image = Image.fromarray(blurred)
     text = pytesseract.image_to_string(pil_image, lang='eng')
 
+    print(f'\tDebug: {text}')
     return text
 
-
-api = Flask(__name__)
-CORS(api)
 
 @api.route('/', methods=['POST', 'GET'])
 def handle_fetch_request():
     if request.method == 'POST':
-        json = request.get_json()
+        data = request.get_json()
 
-        pil_image = base64_to_image(json['base64'])
-        print(detect_text_from_image(pil_image))
+        pil_image = base64_to_image(data['base64'])
+        text = detect_text_from_image(pil_image)
 
-        return json
+        if text:
+            print(f'Debug: {medications}')
+
+        return data
 
     else:
-        print("GETR")
-        return 'GETTER'
+        return json.dumps(medications, indent=4)
 
 
 if __name__ == '__main__':
